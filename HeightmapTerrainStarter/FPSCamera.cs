@@ -21,6 +21,11 @@ namespace HeightmapTerrainStarter
         Game game;
 
         /// <summary>
+        /// Gets or sets the heightmap this camera is interacting with
+        /// </summary>
+        public IHeightMap HeightMap { get; set; }
+
+        /// <summary>
         /// Gets or sets how high above the heightmap the camera should be
         /// </summary>
         public float HeightOffset { get; set; } = 5;
@@ -39,34 +44,52 @@ namespace HeightmapTerrainStarter
         /// <param name="gameTime">The current GameTime</param>
         public void Update(GameTime gameTime)
         {
+            // Adjust camera height to heightmap
+            if (HeightMap != null)
+            {
+                position.Y = HeightMap.GetHeightAt(position.X, position.Z) + HeightOffset;
+            }
             var keyboard = Keyboard.GetState();
             var newMouseState = Mouse.GetState();
 
             // Get the direction the player is currently facing
-            var facing = Vector3.Transform(Vector3.Forward, Matrix.CreateRotationY(horizontalAngle));
+            var facing = Vector3.Transform(
+                Vector3.Forward,
+                Matrix.CreateRotationY(horizontalAngle)
+            );
 
             // Forward and backward movement
-            if (keyboard.IsKeyDown(Keys.W)) position += facing * Speed;
-            if (keyboard.IsKeyDown(Keys.S)) position -= facing * Speed;
+            if (keyboard.IsKeyDown(Keys.W))
+                position += facing * Speed;
+            if (keyboard.IsKeyDown(Keys.S))
+                position -= facing * Speed;
 
             // Strifing movement
-            if (keyboard.IsKeyDown(Keys.A)) position += Vector3.Cross(Vector3.Up, facing) * Speed;
-            if (keyboard.IsKeyDown(Keys.D)) position -= Vector3.Cross(Vector3.Up, facing) * Speed;
-            
+            if (keyboard.IsKeyDown(Keys.A))
+                position += Vector3.Cross(Vector3.Up, facing) * Speed;
+            if (keyboard.IsKeyDown(Keys.D))
+                position -= Vector3.Cross(Vector3.Up, facing) * Speed;
+
             // Adjust horizontal angle
             horizontalAngle += Sensitivity * (oldMouseState.X - newMouseState.X);
 
-            // Adjust vertical angle 
+            // Adjust vertical angle
             verticalAngle += Sensitivity * (oldMouseState.Y - newMouseState.Y);
 
             // determine the direction the camera faces
-            var direction = Vector3.Transform(Vector3.Forward, Matrix.CreateRotationX(verticalAngle) * Matrix.CreateRotationY(horizontalAngle));
+            var direction = Vector3.Transform(
+                Vector3.Forward,
+                Matrix.CreateRotationX(verticalAngle) * Matrix.CreateRotationY(horizontalAngle)
+            );
 
             // create the veiw matrix
             View = Matrix.CreateLookAt(position, position + direction, Vector3.Up);
 
-            // Reset mouse state 
-            Mouse.SetPosition(game.Window.ClientBounds.Width / 2, game.Window.ClientBounds.Height / 2);
+            // Reset mouse state
+            Mouse.SetPosition(
+                game.Window.ClientBounds.Width / 2,
+                game.Window.ClientBounds.Height / 2
+            );
             oldMouseState = Mouse.GetState();
         }
 
@@ -83,8 +106,16 @@ namespace HeightmapTerrainStarter
             this.horizontalAngle = 0;
             this.verticalAngle = 0;
 
-            this.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, game.GraphicsDevice.Viewport.AspectRatio, 1, 1000);
-            Mouse.SetPosition(game.Window.ClientBounds.Width / 2, game.Window.ClientBounds.Height / 2);
+            this.Projection = Matrix.CreatePerspectiveFieldOfView(
+                MathHelper.PiOver4,
+                game.GraphicsDevice.Viewport.AspectRatio,
+                1,
+                1000
+            );
+            Mouse.SetPosition(
+                game.Window.ClientBounds.Width / 2,
+                game.Window.ClientBounds.Height / 2
+            );
             oldMouseState = Mouse.GetState();
         }
     }
